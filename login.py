@@ -1,14 +1,9 @@
 import os
 import pandas as pd
-from ui import clear_screen
+from ui import header
 
 def login():
-    clear_screen()
-    print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
-    print("=====   SELAMAT    DATANG  DI   =====")
-    print("=====   PERPUSTAKAAN    JEMBER  =====")
-    print("=========== SILAKAN  LOGIN ==========")
-    print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
+    header("PERPUSTAKAAN JEMBER", "LOGIN AKUN PENGGUNA")
 
     username = input("Username: ").strip()
     password = input("Password: ").strip()
@@ -33,6 +28,8 @@ def login():
 
 def registrasi():
     '''registrasi'''
+    header("PERPUSTAKAAN JEMBER", "REGISTRASI AKUN PENGGUNA")
+
     username = input("username: ").strip()
     password = input("password: ").strip()
     role = "peminjam"

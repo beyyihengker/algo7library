@@ -1,14 +1,10 @@
 import os
-from ui import clear_screen
+from ui import header, footer
 from login import login, registrasi
 
 def main():
     '''Main Menu'''
-    clear_screen()
-    print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
-    print("=====   SELAMAT    DATANG  DI   =====")
-    print("=====   PERPUSTAKAAN    JEMBER  =====")
-    print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
+    header("SELAMAT DATANG DI", "PERPUSTAKAAN JEMBER")
     print("Pilih opsi:")
     print("1. Login\n2. Registrasi\n0. Keluar")
     opsi = input("Masukkan pilihan opsi sesuai angka (1/2/0)> ")
@@ -31,7 +27,7 @@ def main():
     elif opsi == "0":
         exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
         if exit_choice == 'y':
-            print("Keluar dari aplikasi...")
+            footer()
             exit()
         else:
             main()
