@@ -1,4 +1,3 @@
-import os
 from ui import header, footer
 from login import login, registrasi
 
@@ -37,5 +36,4 @@ def main():
         main()
 
 if __name__ == "__main__":
-    os.system("cls" if os.name == "nt" else "clear")
     main()
