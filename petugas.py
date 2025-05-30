@@ -1,9 +1,8 @@
-def interface_petugas():
+from ui import header, footer
+
+def interface_petugas(username):
     while True:
-        print("\n==========˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊==========")
-        print("==== Selamat  Datang,  Petugas ====")
-        print("========    Menu  Petugas   =======")
-        print("===========˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊===========")
+        header("PERPUSTAKAAN JEMBER", "MENU PETUGAS")
         menu_petugas =[
             ["1", "Registrasi akun peminjam"],
             ["2", "Menambahkan buku"],
@@ -13,26 +12,42 @@ def interface_petugas():
             ["6", "Logout"],
             ["7", "Keluar Aplikasi"]
         ]
+        for menu in menu_petugas:
+            print(f"{menu[0]}. {menu[1]}")
     
-        pilihan = int(input("Pilih menu: "))
+        pilihan = input("Pilih menu: ").strip()
         
         if pilihan == "1":
+            pass
 
 
         elif pilihan == "2":
+            # lihat_buku()
+            interface_petugas(username)
 
+        elif pilihan == "3":
+            # tambah_buku()
+            interface_petugas(username)
 
+        elif pilihan == "4":
+            # lihat_peminjaman()
+            interface_petugas(username)
+        
         elif pilihan == "5":
-            os.system("cls")
-            main()
+            # konfirmasi_pengembalian()
+            interface_petugas(username)
         
         elif pilihan == "6":
-            os.system("cls")
-            print("Keluar dari aplikasi...")
-            exit()
+            return
+        
+        elif pilihan == "6":
+            exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
+            if exit_choice == 'y':
+                footer()
+                exit()
+            interface_petugas(username)
         
         else:
             print("Pilihan tidak valid.")
             input("Tekan enter untuk kembali")
-            os.system("cls")
-            interface_petugas()
+            interface_petugas(username)

@@ -1,5 +1,6 @@
 from ui import header, footer
 from login import login, registrasi
+import petugas as pt
 
 def main():
     '''Main Menu'''
@@ -10,8 +11,7 @@ def main():
     if opsi == "1":
         username, role = login()
         if role == "petugas":
-            # interface_petugas()
-            pass
+            pt.interface_petugas(username)
         elif role == "peminjam":
             # interface_peminjam()
             pass
