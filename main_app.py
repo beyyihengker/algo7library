@@ -1,6 +1,7 @@
 from ui import header, footer
 from login import login, registrasi
 import peminjam as pj
+import petugas as pt
 
 def main():
     '''Main Menu'''
@@ -11,8 +12,7 @@ def main():
     if opsi == "1":
         username, role = login()
         if role == "petugas":
-            # interface_petugas()
-            pass
+            pt.interface_petugas(username)
         elif role == "peminjam":
             pj.interface_peminjam(username)
             input("Tekan ENTER untuk kembali ke menu utama")
