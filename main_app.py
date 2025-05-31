@@ -1,3 +1,4 @@
+import pandas as pd
 from ui import header, footer
 from login import login, registrasi
 import peminjam as pj
@@ -5,16 +6,18 @@ import petugas as pt
 
 def main():
     '''Main Menu'''
+    users = pd.read_csv("akun_pengguna.csv")
     header("SELAMAT DATANG DI", "PERPUSTAKAAN JEMBER")
     print("Pilih opsi:")
     print("1. Login\n2. Registrasi\n0. Keluar")
     opsi = input("Masukkan pilihan opsi sesuai angka (1/2/0)> ")
     if opsi == "1":
-        username, role = login()
+        user_id = login()
+        role = users.loc[users['user_id'] == user_id, 'role'].values[0] if user_id is not None else None
         if role == "petugas":
-            pt.interface_petugas(username)
+            pt.interface_petugas(user_id)
         elif role == "peminjam":
-            pj.interface_peminjam(username)
+            pj.interface_peminjam(user_id)
             input("Tekan ENTER untuk kembali ke menu utama")
             main()
         elif role is None:

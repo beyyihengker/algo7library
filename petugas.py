@@ -1,6 +1,6 @@
 from ui import header, footer
 
-def interface_petugas(username):
+def interface_petugas(user_id):
     while True:
         header("PERPUSTAKAAN JEMBER", "MENU PETUGAS")
         menu_petugas =[
@@ -23,19 +23,19 @@ def interface_petugas(username):
 
         elif pilihan == "2":
             # lihat_buku()
-            interface_petugas(username)
+            interface_petugas(user_id)
 
         elif pilihan == "3":
             # tambah_buku()
-            interface_petugas(username)
+            interface_petugas(user_id)
 
         elif pilihan == "4":
             # lihat_peminjaman()
-            interface_petugas(username)
+            interface_petugas(user_id)
         
         elif pilihan == "5":
             # konfirmasi_pengembalian()
-            interface_petugas(username)
+            interface_petugas(user_id)
         
         elif pilihan == "6":
             return
@@ -45,9 +45,9 @@ def interface_petugas(username):
             if exit_choice == 'y':
                 footer()
                 exit()
-            interface_petugas(username)
+            interface_petugas(user_id)
         
         else:
             print("Pilihan tidak valid.")
             input("Tekan enter untuk kembali")
-            interface_petugas(username)
+            interface_petugas(user_id)

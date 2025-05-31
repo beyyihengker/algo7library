@@ -1,27 +1,32 @@
 import pandas as pd
+import fitur as ft
 from ui import header, footer
 
-def lihat_buku():
-    """Fungsi untuk melihat daftar buku."""
-    header("PERPUSTAKAAN JEMBER", "DAFTAR BUKU")
-    
-    try:
-        df = pd.read_csv("buku.csv")
-        if df.empty:
-            print("Tidak ada buku yang tersedia.")
-        else:
-            print(df.to_string(index=False))
-    except FileNotFoundError:
-        print("File buku.csv tidak ditemukan. Pastikan file tersebut ada di direktori yang benar.")
-    
-    input("Tekan enter untuk kembali ke menu peminjam...")
+
+
+def menu_daftar_buku():
+    while True:
+        header("PERPUSTAKAAN JEMBER", "MENU DAFTAR BUKU")
+        print("1. Tampilkan semua buku")
+        print("2. Urutkan buku")
+        print("3. Filter berdasarkan genre")
+        print("4. Cari buku")
+        print("5. Kembali ke menu utama")
+        
+        choice = input("Pilih menu (1-5): ")
+
+        books = pd.read_csv("books.csv")
+        genres = pd.read_csv("genres.csv")
+        
+        if choice == '1':
+            ft.lihat_buku(books, genres)
 
 def pinjam_buku(username):
     """Fungsi untuk meminjam buku."""
     header("PERPUSTAKAAN JEMBER", "MEMINJAM BUKU")
     
     try:
-        df = pd.read_csv("buku.csv")
+        df = pd.read_csv("books.csv")
         if df.empty:
             print("Tidak ada buku yang tersedia untuk dipinjam.")
             input("Tekan enter untuk kembali ke menu peminjam...")
@@ -61,8 +66,7 @@ def interface_peminjam(username):
     pilihan = input("Pilih menu: ").strip()
         
     if pilihan == "1":
-        lihat_buku()
-        interface_peminjam(username)
+        menu_daftar_buku()
 
     elif pilihan == "2":
         pinjam_buku(username)
