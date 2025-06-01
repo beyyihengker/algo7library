@@ -22,7 +22,6 @@ def lihat_buku(books, genres):
             df = books_with_genres[kolom_view]
             df = df.rename(columns=rename_kolom)
             print(tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False))
-            input("Tekan enter untuk kembali ke menu daftar buku...")
     except FileNotFoundError:
         print("File buku.csv tidak ditemukan. Pastikan file tersebut ada di direktori yang benar.")
 
@@ -67,3 +66,41 @@ def tambah_buku(books, genres):
             if opsi == '0':
                 return
             continue
+
+def optimized_merge_sort(df, key, ascending=True):
+    if len(df) <= 15:  # Gunakan Insertion Sort untuk dataset kecil
+        return insertion_sort(df, key, ascending)
+    
+    mid = len(df) // 2
+    left = optimized_merge_sort(df.iloc[:mid], key, ascending)
+    right = optimized_merge_sort(df.iloc[mid:], key, ascending)
+    
+    return merge(left, right, key, ascending)
+
+def insertion_sort(df, key, ascending):
+    df = df.copy()
+    for i in range(1, len(df)):
+        j = i
+        while j > 0 and (
+            (df.iloc[j-1][key] > df.iloc[j][key] if ascending else 
+             df.iloc[j-1][key] < df.iloc[j][key])):
+            # Swap rows
+            df.iloc[j-1], df.iloc[j] = df.iloc[j], df.iloc[j-1]
+            j -= 1
+    return df
+
+def merge(left, right, key, ascending):
+    result = pd.DataFrame(columns=left.columns)
+    i = j = 0
+    
+    while i < len(left) and j < len(right):
+        if (left.iloc[i][key] <= right.iloc[j][key] if ascending else 
+            left.iloc[i][key] >= right.iloc[j][key]):
+            result = pd.concat([result, left.iloc[[i]]], ignore_index=True)
+            i += 1
+        else:
+            result = pd.concat([result, right.iloc[[j]]], ignore_index=True)
+            j += 1
+    
+    result = pd.concat([result, left.iloc[i:], right.iloc[j:]], ignore_index=True)
+    return result

@@ -20,6 +20,9 @@ def menu_daftar_buku():
         
         if choice == '1':
             ft.lihat_buku(books, genres)
+            input("Tekan enter untuk kembali ke menu daftar buku...")
+        elif choice == '2':
+            pass
 
 def pinjam_buku(username):
     """Fungsi untuk meminjam buku."""
