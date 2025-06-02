@@ -10,7 +10,10 @@ def pinjam_buku(user_id):
         try:
             book_id = int(input("Masukkan ID buku yang ingin dipinjam: "))
         except ValueError:
-            print("ID buku harus berupa angka. Silakan coba lagi.")
+            print("ID buku harus berupa angka.")
+            opsi = input("Tekan enter untuk mencoba lagi atau ketik 0 untuk kembali ke menu daftar buku: ")
+            if opsi == '0':
+                return
             continue
 
         if int(book_id) not in books['book_id'].values:
