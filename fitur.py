@@ -2,7 +2,7 @@ import pandas as pd
 from ui import header
 from tabulate import tabulate
 
-def lihat_buku(books, genres):
+def lihat_buku(books, genres, isbn=False):
     """Fungsi untuk melihat daftar buku."""
     books_with_genres = books.merge(genres, on='genre_id', how='left')
     try:
@@ -19,9 +19,14 @@ def lihat_buku(books, genres):
                 'quantity': 'Jumlah',
                 'publication_year': 'Tahun Terbit'
             }
+
+            if isbn:
+                kolom_view.append('isbn')
+                rename_kolom['isbn'] = 'ISBN'
+
             df = books_with_genres[kolom_view]
             df = df.rename(columns=rename_kolom)
-            print(tabulate(df, headers='keys', tablefmt='fancy_grid', showindex=False))
+            print(tabulate(df, headers='keys', tablefmt='fancy_grid', numalign='left', showindex=False))
     except FileNotFoundError:
         print("File buku.csv tidak ditemukan. Pastikan file tersebut ada di direktori yang benar.")
 
@@ -174,3 +179,6 @@ def cari_buku_berdasarkan_keyword(books, keyword):
     else:
         print(f"Tidak ditemukan buku dengan kata kunci '{keyword}'")
         return pd.DataFrame(columns=books.columns)
+
+lihat_buku(books=pd.read_csv("books.csv"),
+           genres=pd.read_csv("genres.csv"), isbn=True)
