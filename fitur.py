@@ -158,9 +158,9 @@ def find_books_by_genre(books, genre_id):
 
     # Return the found books or an empty DataFrame if none found
     if result_indices:
-        return len(result_indices), books_sorted.iloc[result_indices].copy()
+        return books_sorted.iloc[result_indices].copy()
     else:
-        return 0, pd.DataFrame(columns=books.columns)
+        return pd.DataFrame(columns=books.columns)
 
 def cari_buku_berdasarkan_keyword(books, keyword):
     """Fungsi untuk mencari buku berdasarkan judul atau pengarang."""

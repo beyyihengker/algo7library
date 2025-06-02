@@ -2,6 +2,7 @@ import pandas as pd
 import fitur as ft
 from ui import header, footer
 from datetime import datetime, timedelta
+from tabulate import tabulate
 
 def pinjam_buku(user_id):
     books = pd.read_csv("books.csv")
@@ -44,6 +45,48 @@ def pinjam_buku(user_id):
 
         print(f"Peminjaman buku {book['title']} berhasil diajukan. Menunggu konfirmasi petugas.")
         break
+
+def kembalikan_buku(user_id):
+    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    transaksi_aktif = transaksi[(transaksi['user_id'] == user_id) & (transaksi['status'] == 'aktif')]
+    
+    if transaksi_aktif.empty:
+        print("Tidak ada buku yang sedang dipinjam.")
+        return
+    
+    print("\nDaftar Buku yang Dipinjam:")
+    daftar_buku = transaksi_aktif[['loan_id', 'book_id', 'loan_date', 'due_date']]
+    print(tabulate(daftar_buku, headers='keys', tablefmt='fancy_grid', showindex=False))
+    
+    loan_id = input("Masukkan ID peminjaman yang akan dikembalikan: ")
+    
+    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+    transaksi.loc[idx, 'status'] = 'menunggu_pengecekan'
+    
+    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+    print("Buku berhasil diajukan untuk dikembalikan. Menunggu konfirmasi petugas.")
+
+def lihat_riwayat_peminjaman(user_id):
+    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    books = pd.read_csv("books.csv")
+    transaksi_buku = transaksi.merge(books, on='book_id', how='left')
+    riwayat = transaksi_buku[transaksi_buku['user_id'] == user_id]
+    riwayat = riwayat[['loan_id', 'title', 'loan_date', 'due_date', 'return_date', 'status']]
+    riwayat = riwayat.rename(columns={
+        'loan_id': 'ID Peminjaman',
+        'title': 'Judul Buku',
+        'loan_date': 'Tanggal Pinjam',
+        'due_date': 'Tanggal Batas Pengembalian',
+        'return_date': 'Tanggal Pengembalian',
+        'status': 'Status'
+    })
+
+    if riwayat.empty:
+        print("Tidak ada riwayat peminjaman.")
+        return
+    
+    print("\nRiwayat Peminjaman:")
+    print(tabulate(riwayat, headers='keys', tablefmt='fancy_grid', showindex=False))
 
 def menu_urutkan_buku(books, genres, user_id):
     """Fungsi untuk mengurutkan buku berdasarkan pilihan pengguna."""
@@ -99,25 +142,60 @@ def menu_daftar_buku(user_id):
                 input("Tekan enter untuk melanjutkan...")
         
         elif choice == '3':
-            ft.find_books_by_genre(books, genres) # jgn lupa
+            print("\nDaftar Genre Tersedia:")
+            print(tabulate(genres, headers='keys', tablefmt='fancy_grid', showindex=False))
+            
+            while True:
+                try:
+                    genre_id = int(input("Masukkan ID genre: "))
+                    if genre_id not in genres['genre_id'].values:
+                        print("ID genre tidak valid. Silakan coba lagi.")
+                        continue
+                    break
+                except ValueError:
+                    print("ID genre harus berupa angka. Silakan coba lagi.")
+                    continue
+
+            genre_books = ft.find_books_by_genre(books, genre_id)
+            ft.lihat_buku(genre_books, genres)
             opsi = input("Tekan enter untuk kembali ke menu daftar buku atau ketik 1 untuk meminjam buku: ")
             if opsi == '1':
                 pinjam_buku(user_id)
                 input("Tekan enter untuk melanjutkan...")
+        
+        elif choice == '4':
+            while True:
+                keyword = input("Masukkan kata kunci untuk mencari buku: ").strip()
+                if not keyword:
+                    print("Kata kunci tidak boleh kosong. Silakan coba lagi.")
+                    continue
+                break
+
+            search_results = ft.cari_buku_berdasarkan_keyword(books, keyword)
+            ft.lihat_buku(search_results, genres)
+            opsi = input("Tekan enter untuk kembali ke menu daftar buku atau ketik 1 untuk meminjam buku: ")
+            if opsi == '1':
+                pinjam_buku(user_id)
+                input("Tekan enter untuk melanjutkan...")
+        
+        elif choice == '5':
+            return
+        
+        else:
+            print("Pilihan tidak valid. Silakan coba lagi.")
+            input("Tekan enter untuk melanjutkan...")
+            continue
 
 def interface_peminjam(user_id):
     """Antarmuka peminjam untuk melihat daftar buku dan meminjam buku."""
     while True:
         header("PERPUSTAKAAN JEMBER", "MENU PEMINJAM")
-
-        menu_petugas =[
-            ["1", "Melihat daftar buku"],
-            ["2", "Meminjam buku"],
-            ["3", "Logout"],
-            ["4", "Keluar Aplikasi"]
-        ]
-        for menu in menu_petugas:
-            print(f"{menu[0]}. {menu[1]}")
+        print("1. Lihat Daftar Buku")
+        print("2. Pinjam Buku")
+        print("3. Kembalikan Buku")
+        print("4. Lihat Riwayat Peminjaman")
+        print("5. Logout")
+        print("6. Keluar Aplikasi")       
 
         pilihan = input("Pilih menu: ").strip()
 
@@ -125,19 +203,30 @@ def interface_peminjam(user_id):
             menu_daftar_buku(user_id)
 
         elif pilihan == "2":
+            header("PERPUSTAKAAN JEMBER", "PINJAM BUKU")
             pinjam_buku(user_id)
-    
+            input("Tekan enter untuk melanjutkan...")
+
         elif pilihan == "3":
+            header("PERPUSTAKAAN JEMBER", "KEMBALIKAN BUKU")
+            kembalikan_buku(user_id)
+            input("Tekan enter untuk melanjutkan...")
+        
+        elif pilihan == "4":
+            header("PERPUSTAKAAN JEMBER", "RIWAYAT PEMINJAMAN")
+            lihat_riwayat_peminjaman(user_id)
+            input("Tekan enter untuk melanjutkan...")
+    
+        elif pilihan == "5":
                 return
 
-        elif pilihan == "4":
+        elif pilihan == "6":
             exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
             if exit_choice == 'y':
                 footer()
                 exit()
+            input("Pilihan tidak valid. Tekan enter untuk kembali ke menu utama.")
 
         else:
             print("Pilihan tidak valid.")
             input("Tekan enter untuk kembali")
-
-# interface_peminjam()
