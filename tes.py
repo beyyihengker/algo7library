@@ -1,200 +1,248 @@
 import pandas as pd
+from datetime import datetime, timedelta
+import os
 
-# Load data
-def load_data():
-    books = pd.read_csv('books.csv')
-    genres = pd.read_csv('genres.csv')
-    return books, genres
+# File database
+DB_FILES = {
+    'akun_pengguna': 'akun_pengguna.csv',
+    'books': 'books.csv',
+    'genres': 'genres.csv',
+    'transaksi_peminjaman': 'transaksi_peminjaman.csv'
+}
 
-# Optimized Merge Sort dengan Insertion Sort untuk elemen kecil
-def optimized_merge_sort(df, key, ascending=True):
-    if len(df) <= 15:  # Gunakan Insertion Sort untuk dataset kecil
-        return insertion_sort(df, key, ascending)
-    
-    mid = len(df) // 2
-    left = optimized_merge_sort(df.iloc[:mid], key, ascending)
-    right = optimized_merge_sort(df.iloc[mid:], key, ascending)
-    
-    return merge(left, right, key, ascending)
+# Inisialisasi database jika belum ada
+def init_db():
+    for file in DB_FILES.values():
+        if not os.path.exists(file):
+            pd.DataFrame().to_csv(file, index=False)
 
-def insertion_sort(df, key, ascending):
-    df = df.copy()
-    for i in range(1, len(df)):
-        j = i
-        while j > 0 and (
-            (df.iloc[j-1][key] > df.iloc[j][key] if ascending else 
-             df.iloc[j-1][key] < df.iloc[j][key])):
-            # Swap rows
-            df.iloc[j-1], df.iloc[j] = df.iloc[j], df.iloc[j-1]
-            j -= 1
-    return df
+    # Inisialisasi struktur tabel jika kosong
+    if os.path.getsize(DB_FILES['akun_pengguna']) == 0:
+        pd.DataFrame(columns=['user_id', 'username', 'password', 'role']).to_csv(DB_FILES['akun_pengguna'], index=False)
+    
+    if os.path.getsize(DB_FILES['books']) == 0:
+        pd.DataFrame(columns=['book_id', 'title', 'author', 'genre_id', 'quantity', 'publication_year', 'isbn']).to_csv(DB_FILES['books'], index=False)
+    
+    if os.path.getsize(DB_FILES['genres']) == 0:
+        pd.DataFrame(columns=['genre_id', 'genre_name']).to_csv(DB_FILES['genres'], index=False)
+    
+    if os.path.getsize(DB_FILES['transaksi_peminjaman']) == 0:
+        pd.DataFrame(columns=['loan_id', 'book_id', 'user_id', 'loan_date', 'due_date', 'return_date', 'status']).to_csv(DB_FILES['transaksi_peminjaman'], index=False)
 
-def merge(left, right, key, ascending):
-    result = pd.DataFrame(columns=left.columns)
-    i = j = 0
-    
-    while i < len(left) and j < len(right):
-        if (left.iloc[i][key] <= right.iloc[j][key] if ascending else 
-            left.iloc[i][key] >= right.iloc[j][key]):
-            result = pd.concat([result, left.iloc[[i]]], ignore_index=True)
-            i += 1
-        else:
-            result = pd.concat([result, right.iloc[[j]]], ignore_index=True)
-            j += 1
-    
-    result = pd.concat([result, left.iloc[i:], right.iloc[j:]], ignore_index=True)
-    return result
+# Fungsi baca database
+def read_db(table_name):
+    return pd.read_csv(DB_FILES[table_name])
 
-# Binary Search untuk mencari range genre
-def find_books_by_genre(books, genre_id):
-    books_sorted = books.sort_values('genre_id')
-    low = 0
-    high = len(books_sorted) - 1
-    result_indices = []
-    
-    while low <= high:
-        mid = (low + high) // 2
-        current_genre = books_sorted.iloc[mid]['genre_id']
-        
-        if current_genre == genre_id:
-            # Expand ke kiri dan kanan untuk temukan semua dengan genre yang sama
-            left = mid - 1
-            while left >= 0 and books_sorted.iloc[left]['genre_id'] == genre_id:
-                result_indices.append(left)
-                left -= 1
-            
-            result_indices.append(mid)
-            
-            right = mid + 1
-            while right < len(books_sorted) and books_sorted.iloc[right]['genre_id'] == genre_id:
-                result_indices.append(right)
-                right += 1
-            break
-        elif current_genre < genre_id:
-            low = mid + 1
-        else:
-            high = mid - 1
-    
-    return books_sorted.iloc[result_indices].copy() if result_indices else pd.DataFrame(columns=books.columns)
+# Fungsi tulis database
+def write_db(table_name, df):
+    df.to_csv(DB_FILES[table_name], index=False)
 
-# Fungsi untuk menampilkan buku
-def display_books(books_df, genres_df):
-    if books_df.empty:
-        print("\nTidak ada buku yang ditemukan.")
+# Fungsi untuk peminjaman buku
+def pinjam_buku(user_id):
+    books = read_db('books')
+    print("\nDaftar Buku Tersedia:")
+    print(books[['book_id', 'title', 'author', 'quantity']].to_string(index=False))
+    
+    book_id = input("Masukkan ID buku yang ingin dipinjam: ")
+    
+    if int(book_id) not in books['book_id'].values:
+        print("Buku tidak ditemukan!")
         return
     
-    # Merge dengan genre untuk dapatkan nama genre
-    merged_df = pd.merge(books_df, genres_df, left_on='genre_id', right_on='genre_id', how='left')
+    book = books[books['book_id'] == int(book_id)].iloc[0]
     
-    # Format output
-    display_cols = ['book_id', 'title', 'author', 'genre_name', 'quantity', 'publication_year']
-    renamed_cols = ['ID', 'Judul', 'Penulis', 'Genre', 'Stok', 'Tahun']
+    if book['quantity'] <= 0:
+        print("Buku tidak tersedia!")
+        return
     
-    formatted_df = merged_df[display_cols].rename(columns=dict(zip(display_cols, renamed_cols)))
+    # Buat transaksi peminjaman
+    transaksi = read_db('transaksi_peminjaman')
+    loan_id = transaksi['loan_id'].max() + 1 if not transaksi.empty else 1
     
-    print("\nDaftar Buku:")
-    print("=" * 100)
-    print(formatted_df.to_string(index=False))
-    print("=" * 100)
+    today = datetime.now().strftime('%Y-%m-%d')
+    due_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
+    
+    new_transaksi = pd.DataFrame([{
+        'loan_id': loan_id,
+        'book_id': book_id,
+        'user_id': user_id,
+        'loan_date': today,
+        'due_date': due_date,
+        'return_date': None,
+        'status': 'menunggu'
+    }])
+    
+    transaksi = pd.concat([transaksi, new_transaksi], ignore_index=True)
+    write_db('transaksi_peminjaman', transaksi)
+    
+    print(f"Peminjaman buku {book['title']} berhasil diajukan. Menunggu konfirmasi petugas.")
 
-# Menu utama lihat daftar buku
-def view_books_menu(books_df, genres_df):
-    current_books = books_df.copy()
+# Fungsi untuk konfirmasi peminjaman oleh petugas
+def konfirmasi_peminjaman():
+    transaksi = read_db('transaksi_peminjaman')
+    books = read_db('books')
     
-    while True:
-        print("\n=== MENU DAFTAR BUKU ===")
-        print("1. Tampilkan semua buku")
-        print("2. Urutkan buku")
-        print("3. Filter berdasarkan genre")
-        print("4. Cari buku")
-        print("5. Kembali ke menu utama")
+    menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu']
+    
+    if menunggu_transaksi.empty:
+        print("Tidak ada transaksi yang menunggu konfirmasi.")
+        return
+    
+    print("\nDaftar Peminjaman Menunggu Konfirmasi:")
+    print(menunggu_transaksi.to_string(index=False))
+    
+    loan_id = input("Masukkan ID peminjaman yang akan dikonfirmasi: ")
+    action = input("Konfirmasi (1. Setujui, 2. Tolak): ")
+    
+    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+    
+    if action == '1':
+        transaksi.loc[idx, 'status'] = 'aktif'
         
-        choice = input("Pilih menu (1-5): ")
+        # Kurangi stok buku
+        book_id = transaksi.loc[idx, 'book_id'].values[0]
+        book_idx = books[books['book_id'] == book_id].index
+        books.loc[book_idx, 'quantity'] -= 1
         
-        if choice == '1':
-            display_books(current_books, genres_df)
-        elif choice == '2':
-            print("\nUrutkan berdasarkan:")
-            print("1. Judul (A-Z)")
-            print("2. Judul (Z-A)")
-            print("3. Tahun Terbit (Terbaru)")
-            print("4. Tahun Terbit (Terlama)")
-            sort_choice = input("Pilihan (1-4): ")
-            
-            if sort_choice == '1':
-                sorted_books = optimized_merge_sort(current_books, 'title', True)
-            elif sort_choice == '2':
-                sorted_books = optimized_merge_sort(current_books, 'title', False)
-            elif sort_choice == '3':
-                sorted_books = optimized_merge_sort(current_books, 'publication_year', False)
-            elif sort_choice == '4':
-                sorted_books = optimized_merge_sort(current_books, 'publication_year', True)
-            else:
-                print("Pilihan tidak valid!")
-                continue
-            
-            display_books(sorted_books, genres_df)
-            current_books = sorted_books.copy()
-        elif choice == '3':
-            print("\nDaftar Genre Tersedia:")
-            print(genres_df[['genre_id', 'genre_name']].to_string(index=False))
-            
-            try:
-                genre_id = int(input("Masukkan ID genre: "))
-                genre_books = find_books_by_genre(current_books, genre_id)
-                
-                if not genre_books.empty:
-                    genre = genres_df.loc[genres_df['genre_id'] == genre_id, 'genre_name'].values[0]
-                    print(f"\nBuku dengan genre '{genre}':")
-                    display_books(genre_books, genres_df)
-                    current_books = genre_books.copy()
-                else:
-                    print("Tidak ditemukan buku dengan genre tersebut.")
-            except ValueError:
-                print("ID genre harus berupa angka!")
-        elif choice == '4':
-            query = input("Masukkan kata kunci pencarian (judul/penulis): ").lower()
-            
-            mask = (current_books['title'].str.lower().str.contains(query) | 
-                   current_books['author'].str.lower().str.contains(query))
-            
-            found_books = current_books[mask]
-            
-            if not found_books.empty:
-                print(f"\nHasil pencarian untuk '{query}':")
-                display_books(found_books, genres_df)
-                current_books = found_books.copy()
-            else:
-                print(f"Tidak ditemukan buku dengan kata kunci '{query}'")
-        elif choice == '5':
-            break
-        else:
-            print("Pilihan tidak valid!")
+        write_db('books', books)
+        print("Peminjaman disetujui. Status berubah menjadi aktif.")
+    elif action == '2':
+        transaksi.loc[idx, 'status'] = 'ditolak'
+        print("Peminjaman ditolak.")
+    
+    write_db('transaksi_peminjaman', transaksi)
 
-# Main program
+# Fungsi untuk pengembalian buku oleh peminjam
+def kembalikan_buku(user_id):
+    transaksi = read_db('transaksi_peminjaman')
+    aktif_transaksi = transaksi[(transaksi['user_id'] == user_id) & (transaksi['status'] == 'aktif')]
+    
+    if aktif_transaksi.empty:
+        print("Tidak ada buku yang sedang dipinjam.")
+        return
+    
+    print("\nDaftar Buku yang Dipinjam:")
+    print(aktif_transaksi[['loan_id', 'book_id', 'loan_date', 'due_date']].to_string(index=False))
+    
+    loan_id = input("Masukkan ID peminjaman yang akan dikembalikan: ")
+    
+    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+    transaksi.loc[idx, 'status'] = 'menunggu_pengecekan'
+    
+    write_db('transaksi_peminjaman', transaksi)
+    print("Buku berhasil diajukan untuk dikembalikan. Menunggu konfirmasi petugas.")
+
+# Fungsi untuk konfirmasi pengembalian oleh petugas
+def konfirmasi_pengembalian():
+    transaksi = read_db('transaksi_peminjaman')
+    books = read_db('books')
+    
+    menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu_pengecekan']
+    
+    if menunggu_transaksi.empty:
+        print("Tidak ada pengembalian yang menunggu konfirmasi.")
+        return
+    
+    print("\nDaftar Pengembalian Menunggu Konfirmasi:")
+    print(menunggu_transaksi.to_string(index=False))
+    
+    loan_id = input("Masukkan ID peminjaman yang akan dikonfirmasi: ")
+    
+    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+    transaksi.loc[idx, 'status'] = 'dikembalikan'
+    transaksi.loc[idx, 'return_date'] = datetime.now().strftime('%Y-%m-%d')
+    
+    # Tambah stok buku
+    book_id = transaksi.loc[idx, 'book_id'].values[0]
+    book_idx = books[books['book_id'] == book_id].index
+    books.loc[book_idx, 'quantity'] += 1
+    
+    write_db('books', books)
+    write_db('transaksi_peminjaman', transaksi)
+    print("Pengembalian dikonfirmasi. Status berubah menjadi dikembalikan.")
+
+# Fungsi untuk melihat riwayat peminjaman
+def lihat_riwayat():
+    transaksi = read_db('transaksi_peminjaman')
+    books = read_db('books')
+    
+    # Cek dan update status yang terlambat
+    today = datetime.now().date()
+    aktif_transaksi = transaksi[transaksi['status'] == 'aktif']
+    
+    for _, row in aktif_transaksi.iterrows():
+        due_date = datetime.strptime(row['due_date'], '%Y-%m-%d').date()
+        if today > due_date:
+            transaksi.loc[transaksi['loan_id'] == row['loan_id'], 'status'] = 'terlambat'
+    
+    write_db('transaksi_peminjaman', transaksi)
+    
+    print("\nRiwayat Transaksi Peminjaman:")
+    print(transaksi.to_string(index=False))
+
+# Fungsi login
+def login():
+    akun_pengguna = read_db('akun_pengguna')
+    
+    username = input("Username: ")
+    password = input("Password: ")
+    
+    user = akun_pengguna[(akun_pengguna['username'] == username) & (akun_pengguna['password'] == password)]
+    
+    if user.empty:
+        print("Login gagal. Username atau password salah.")
+        return None
+    
+    return user.iloc[0]['user_id'], user.iloc[0]['role']
+
+# Menu utama
 def main():
-    books_df, genres_df = load_data()
+    init_db()
     
-    print("\n=== APLIKASI PERPUSTAKAAN ===")
-    print("Anda login sebagai Peminjam")
+    print("=== Sistem Perpustakaan ===")
+    
+    user_info = login()
+    if not user_info:
+        return
+    
+    user_id, role = user_info
     
     while True:
         print("\nMenu Utama:")
-        print("1. Lihat Daftar Buku")
-        print("2. Pinjam Buku")
-        print("3. Keluar")
-        
-        main_choice = input("Pilih menu (1-3): ")
-        
-        if main_choice == '1':
-            view_books_menu(books_df, genres_df)
-        elif main_choice == '2':
-            print("Fitur peminjaman buku akan diimplementasikan di sini")
-        elif main_choice == '3':
-            print("Terima kasih telah menggunakan sistem perpustakaan.")
-            break
-        else:
-            print("Pilihan tidak valid!")
+        if role == 'peminjam':
+            print("1. Pinjam Buku")
+            print("2. Kembalikan Buku")
+            print("3. Keluar")
+            
+            choice = input("Pilih menu: ")
+            
+            if choice == '1':
+                pinjam_buku(user_id)
+            elif choice == '2':
+                kembalikan_buku(user_id)
+            elif choice == '3':
+                break
+            else:
+                print("Pilihan tidak valid!")
+                
+        elif role == 'petugas':
+            print("1. Konfirmasi Peminjaman")
+            print("2. Konfirmasi Pengembalian")
+            print("3. Lihat Riwayat Peminjaman")
+            print("4. Keluar")
+            
+            choice = input("Pilih menu: ")
+            
+            if choice == '1':
+                konfirmasi_peminjaman()
+            elif choice == '2':
+                konfirmasi_pengembalian()
+            elif choice == '3':
+                lihat_riwayat()
+            elif choice == '4':
+                break
+            else:
+                print("Pilihan tidak valid!")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,2 @@
+loan_id,book_id,user_id,loan_date,due_date,return_date,status
+1,199,5,2025-06-02,2025-06-09,2025-06-02,dikembalikan

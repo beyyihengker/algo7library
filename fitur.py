@@ -179,6 +179,3 @@ def cari_buku_berdasarkan_keyword(books, keyword):
     else:
         print(f"Tidak ditemukan buku dengan kata kunci '{keyword}'")
         return pd.DataFrame(columns=books.columns)
-
-lihat_buku(books=pd.read_csv("books.csv"),
-           genres=pd.read_csv("genres.csv"), isbn=True)
