@@ -87,7 +87,7 @@ def display_books(books_df, genres_df):
     merged_df = pd.merge(books_df, genres_df, left_on='genre_id', right_on='genre_id', how='left')
     
     # Format output
-    display_cols = ['book_id', 'title', 'author', 'genre', 'quantity', 'publication_year']
+    display_cols = ['book_id', 'title', 'author', 'genre_name', 'quantity', 'publication_year']
     renamed_cols = ['ID', 'Judul', 'Penulis', 'Genre', 'Stok', 'Tahun']
     
     formatted_df = merged_df[display_cols].rename(columns=dict(zip(display_cols, renamed_cols)))
@@ -137,14 +137,14 @@ def view_books_menu(books_df, genres_df):
             current_books = sorted_books.copy()
         elif choice == '3':
             print("\nDaftar Genre Tersedia:")
-            print(genres_df[['genre_id', 'genre']].to_string(index=False))
+            print(genres_df[['genre_id', 'genre_name']].to_string(index=False))
             
             try:
                 genre_id = int(input("Masukkan ID genre: "))
                 genre_books = find_books_by_genre(current_books, genre_id)
                 
                 if not genre_books.empty:
-                    genre = genres_df.loc[genres_df['genre_id'] == genre_id, 'genre'].values[0]
+                    genre = genres_df.loc[genres_df['genre_id'] == genre_id, 'genre_name'].values[0]
                     print(f"\nBuku dengan genre '{genre}':")
                     display_books(genre_books, genres_df)
                     current_books = genre_books.copy()
