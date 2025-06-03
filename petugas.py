@@ -35,7 +35,7 @@ def interface_petugas():
             ft.konfirmasi_peminjaman()
         
         elif pilihan == "5":
-            pass
+            ft.konfirmasi_pengembalian()
 
         elif pilihan == "6":
             ft.lihat_riwayat_peminjaman()

@@ -15,14 +15,14 @@ def main():
         user_id = login()
         if user_id is not None:
             role = users.loc[users['user_id'] == user_id, 'role'].values[0]
-        if role == "petugas":
-            pt.interface_petugas()
-            input("Tekan ENTER untuk kembali ke menu utama")
-            main()
-        elif role == "peminjam":
-            pj.interface_peminjam(user_id)
-            input("Tekan ENTER untuk kembali ke menu utama")
-            main()
+            if role == "petugas":
+                pt.interface_petugas()
+                input("Tekan ENTER untuk kembali ke menu utama")
+                main()
+            elif role == "peminjam":
+                pj.interface_peminjam(user_id)
+                input("Tekan ENTER untuk kembali ke menu utama")
+                main()
         else:
             main()
     elif opsi == "2":

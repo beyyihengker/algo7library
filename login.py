@@ -16,7 +16,7 @@ def login():
         print("Username atau password salah. Silakan coba lagi.")
         opsi = input("Tekan ENTER untuk mengulang atau 0 untuk kembali ke menu utama> ")
         if opsi == "0":
-            return None, None
+            return None
         return login()
     else:
         user_id = ambil_role.iloc[0]['user_id']
