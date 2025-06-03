@@ -1,8 +1,10 @@
 import pandas as pd
 from ui import header
 from tabulate import tabulate
+from datetime import datetime, timedelta
 
-def lihat_buku(books, genres, isbn=False):
+# FITUR GENERAL
+def lihat_buku(books, genres):
     """Fungsi untuk melihat daftar buku."""
     books_with_genres = books.merge(genres, on='genre_id', how='left')
     try:
@@ -10,68 +12,22 @@ def lihat_buku(books, genres, isbn=False):
             print("Tidak ada buku yang tersedia.")
         else:
             print("Daftar Buku:")
-            kolom_view = ['book_id', 'title', 'author', 'genre_name', 'quantity', 'publication_year']
+            kolom_view = ['book_id', 'title', 'author', 'genre_name', 'quantity', 'publication_year', 'isbn']
             rename_kolom = {
                 'book_id': 'ID Buku',
                 'title': 'Judul',
                 'author': 'Author',
                 'genre_name': 'Genre',
                 'quantity': 'Jumlah',
-                'publication_year': 'Tahun Terbit'
+                'publication_year': 'Tahun Terbit',
+                'isbn': 'ISBN'
             }
-
-            if isbn:
-                kolom_view.append('isbn')
-                rename_kolom['isbn'] = 'ISBN'
 
             df = books_with_genres[kolom_view]
             df = df.rename(columns=rename_kolom)
             print(tabulate(df, headers='keys', tablefmt='fancy_grid', numalign='left', showindex=False))
     except FileNotFoundError:
         print("File buku.csv tidak ditemukan. Pastikan file tersebut ada di direktori yang benar.")
-
-def tambah_buku(books, genres):
-    """Fungsi untuk menambahkan buku."""
-    while True:
-        header("PERPUSTAKAAN JEMBER", "MENAMBAHKAN BUKU")
-    
-        try:
-            new_book = {
-                'book_id': books['book_id'].max() + 1 if not books.empty else 1,
-                'title': input("Masukkan Judul Buku: ").strip(),
-                'author': input("Masukkan Pengarang Buku: ").strip(),
-                # 'genre_id': input("Masukkan ID Genre: ").strip(),
-                'quantity': int(input("Masukkan Jumlah Buku: ").strip()),
-                'publication_year': int(input("Masukkan Tahun Terbit: ").strip()),
-                'isbn': input("Masukkan ISBN Buku: ").strip()
-            }
-
-            genres = genres.rename(columns={'genre_id': 'id genre', 'genre_name': 'genre'})
-            print("Daftar Genre:")
-            print(tabulate(genres, headers='keys', tablefmt='fancy_grid', showindex=False))
-            
-            while True:
-                new_book['genre_id'] = input("Masukkan ID Genre: ").strip()
-                # Validasi genre_id
-                if new_book['genre_id'] not in genres['id genre'].astype(str).values:
-                    print("ID Genre tidak valid. Silakan coba lagi.")
-                else:
-                    break
-
-            books = pd.concat([books, pd.DataFrame([new_book])], ignore_index=True)
-            books.to_csv("books.csv", index=False)
-            print(f"Buku '{new_book['title']}' berhasil ditambahkan.")
-            opsi = input("Tekan enter untuk menambahkan buku lain atau ketik 0 untuk kembali ke menu utama: ").strip()
-            if opsi == '0':
-                return
-            
-        except Exception as e:
-            print("Terjadi kesalahan")
-            opsi = input("Tekan enter untuk mengulangi atau ketik 0 untuk kembali ke menu utama: ").strip()
-            if opsi == '0':
-                return
-            continue
-
 
 def optimized_merge_sort(df, key, ascending=True):
     """Fungsi sorting menggunakan Merge Sort yang dioptimalkan untuk dataset kecil."""
@@ -179,3 +135,324 @@ def cari_buku_berdasarkan_keyword(books, keyword):
     else:
         print(f"Tidak ditemukan buku dengan kata kunci '{keyword}'")
         return pd.DataFrame(columns=books.columns)
+
+def menu_urutkan_buku(books, genres):
+    """Fungsi untuk mengurutkan buku berdasarkan pilihan pengguna."""
+    header("PERPUSTAKAAN JEMBER", "URUTKAN BUKU")
+    print("Pilih kriteria pengurutan:")
+    print("1. Judul (A-Z)")
+    print("2. Judul (Z-A)")
+    print("3. Tahun Terbit (Terbaru)")
+    print("4. Tahun Terbit (Terlama)")
+    
+    sort_choice = input("Pilihan (1-4): ")
+    
+    if sort_choice == '1':
+        sorted_books = optimized_merge_sort(books, key='title', ascending=True)
+    elif sort_choice == '2':
+        sorted_books = optimized_merge_sort(books, key='title', ascending=False)
+    elif sort_choice == '3':
+        sorted_books = optimized_merge_sort(books, key='publication_year', ascending=False)
+    elif sort_choice == '4':
+        sorted_books = optimized_merge_sort(books, key='publication_year', ascending=True)
+    else:
+        print("Pilihan tidak valid!")
+        return
+    
+    lihat_buku(sorted_books, genres)
+
+def menu_daftar_buku(user_id=None):
+    """Fungsi untuk menampilkan menu daftar buku."""
+    while True:
+        header("PERPUSTAKAAN JEMBER", "MENU DAFTAR BUKU")
+        print("1. Tampilkan semua buku")
+        print("2. Urutkan buku")
+        print("3. Filter berdasarkan genre")
+        print("4. Cari buku")
+        print("5. Kembali ke menu utama")
+        
+        choice = input("Pilih menu (1-5): ")
+
+        books = pd.read_csv("books.csv")
+        genres = pd.read_csv("genres.csv")
+        
+        if choice == '1':
+            lihat_buku(books, genres)
+
+        elif choice == '2':
+            menu_urutkan_buku(books, genres)
+
+        elif choice == '3':
+            print("\nDaftar Genre Tersedia:")
+            print(tabulate(genres, headers='keys', tablefmt='fancy_grid', showindex=False))
+            
+            while True:
+                try:
+                    genre_id = int(input("Masukkan ID genre: "))
+                    if genre_id not in genres['genre_id'].values:
+                        print("ID genre tidak valid. Silakan coba lagi.")
+                        continue
+                    break
+                except ValueError:
+                    print("ID genre harus berupa angka. Silakan coba lagi.")
+                    continue
+
+            genre_books = find_books_by_genre(books, genre_id)
+            lihat_buku(genre_books, genres)
+        
+        elif choice == '4':
+            while True:
+                keyword = input("Masukkan kata kunci untuk mencari buku: ").strip()
+                if not keyword:
+                    print("Kata kunci tidak boleh kosong. Silakan coba lagi.")
+                    continue
+                break
+
+            search_results = cari_buku_berdasarkan_keyword(books, keyword)
+            lihat_buku(search_results, genres)
+        
+        elif choice == '5':
+            return
+        
+        else:
+            print("Pilihan tidak valid. Silakan coba lagi.")
+            input("Tekan enter untuk melanjutkan...")
+            continue
+
+        if user_id:
+            opsi = input("Tekan enter untuk kembali ke menu utama atau ketik 1 untuk meminjam buku: ").strip()
+            if opsi == '1':
+                pinjam_buku(user_id)
+                input("Tekan enter untuk melanjutkan...")
+        else:
+            input("Tekan enter untuk melanjutkan...")
+
+def lihat_riwayat_peminjaman(user_id=None):
+    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    if user_id:
+        books = pd.read_csv("books.csv")
+        transaksi_buku = transaksi.merge(books, on='book_id', how='left')
+        riwayat = transaksi_buku[transaksi_buku['user_id'] == user_id]
+        riwayat = riwayat[['title', 'loan_date', 'due_date', 'return_date', 'status']]
+        riwayat = riwayat.rename(columns={
+            'title': 'Judul Buku',
+            'loan_date': 'Tanggal Pinjam',
+            'due_date': 'Tanggal Batas Pengembalian',
+            'return_date': 'Tanggal Pengembalian',
+            'status': 'Status'
+        })
+        transaksi = riwayat
+
+    if transaksi.empty:
+        print("Tidak ada riwayat peminjaman.")
+        return
+    
+    print("\nRiwayat Peminjaman:")
+    print(tabulate(transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
+
+lihat_riwayat_peminjaman(5)
+
+# FITUR PEMINJAM
+def pinjam_buku(user_id):
+    books = pd.read_csv("books.csv")
+    while True:
+        try:
+            book_id = int(input("Masukkan ID buku yang ingin dipinjam: "))
+        except ValueError:
+            print("ID buku harus berupa angka.")
+            opsi = input("Tekan enter untuk mencoba lagi atau ketik 0 untuk kembali ke menu daftar buku: ")
+            if opsi == '0':
+                return
+            continue
+
+        if int(book_id) not in books['book_id'].values:
+            print("Buku tidak ditemukan!")
+            return
+
+        book = books[books['book_id'] == int(book_id)].iloc[0]
+
+        if book['quantity'] <= 0:
+            print("Buku tidak tersedia!")
+            return
+
+        # Buat transaksi peminjaman
+        transaksi = pd.read_csv("transaksi_peminjaman.csv")
+        loan_id = transaksi['loan_id'].max() + 1 if not transaksi.empty else 1
+
+        new_transaksi = pd.DataFrame([{
+            'loan_id': loan_id,
+            'book_id': book_id,
+            'user_id': user_id,
+            'loan_date': None,
+            'due_date': None,
+            'return_date': None,
+            'status': 'menunggu'
+        }])
+
+        transaksi = pd.concat([transaksi, new_transaksi], ignore_index=True)
+        transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+
+        print(f"Peminjaman buku {book['title']} berhasil diajukan. Menunggu konfirmasi petugas.")
+        break
+
+def kembalikan_buku(user_id):
+    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    books = pd.read_csv("books.csv")
+    transaksi_aktif = transaksi[(transaksi['user_id'] == user_id) & (transaksi['status'] == 'aktif')]
+    
+    if transaksi_aktif.empty:
+        print("Tidak ada buku yang sedang dipinjam.")
+        return
+    
+    print("\nDaftar Buku yang Dipinjam:")
+    daftar_buku = transaksi_aktif.merge(books, on='book_id', how='left')
+    daftar_buku = daftar_buku[['loan_id', 'title', 'loan_date', 'due_date']]
+    daftar_buku = daftar_buku.rename(columns={
+        'loan_id': 'ID Peminjaman',
+        'title': 'Judul Buku',
+        'loan_date': 'Tanggal Pinjam',
+        'due_date': 'Tanggal Batas Pengembalian'
+    })
+    print(tabulate(daftar_buku, headers='keys', tablefmt='fancy_grid', showindex=False))
+    
+    while True:
+        try:
+            loan_id = int(input("Masukkan ID peminjaman yang akan dikembalikan: "))
+            if loan_id not in transaksi_aktif['loan_id'].values:
+                print("ID peminjaman tidak valid. Silakan coba lagi.")
+                continue
+            break
+        except ValueError:
+            print("ID peminjaman harus berupa angka. Silakan coba lagi.")
+            continue
+    
+    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+    transaksi.loc[idx, 'status'] = 'menunggu_pengecekan'
+    
+    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+    print("Buku berhasil diajukan untuk dikembalikan. Menunggu konfirmasi petugas.")
+
+# FITUR PETUGAS
+def tambah_buku(books, genres):
+    """Fungsi untuk menambahkan buku."""
+    while True:
+        header("PERPUSTAKAAN JEMBER", "MENAMBAHKAN BUKU")
+    
+        try:
+            new_book = {
+                'book_id': books['book_id'].max() + 1 if not books.empty else 1,
+                'title': input("Masukkan Judul Buku: ").strip(),
+                'author': input("Masukkan Pengarang Buku: ").strip(),
+                # 'genre_id': input("Masukkan ID Genre: ").strip(),
+                'quantity': int(input("Masukkan Jumlah Buku: ").strip()),
+                'publication_year': int(input("Masukkan Tahun Terbit: ").strip()),
+                'isbn': input("Masukkan ISBN Buku: ").strip()
+            }
+
+            genres = genres.rename(columns={'genre_id': 'id genre', 'genre_name': 'genre'})
+            print("Daftar Genre:")
+            print(tabulate(genres, headers='keys', tablefmt='fancy_grid', showindex=False))
+            
+            while True:
+                new_book['genre_id'] = input("Masukkan ID Genre: ").strip()
+                # Validasi genre_id
+                if new_book['genre_id'] not in genres['id genre'].astype(str).values:
+                    print("ID Genre tidak valid. Silakan coba lagi.")
+                else:
+                    break
+
+            books = pd.concat([books, pd.DataFrame([new_book])], ignore_index=True)
+            books.to_csv("books.csv", index=False)
+            print(f"Buku '{new_book['title']}' berhasil ditambahkan.")
+            opsi = input("Tekan enter untuk menambahkan buku lain atau ketik 0 untuk kembali ke menu utama: ").strip()
+            if opsi == '0':
+                return
+            
+        except Exception as e:
+            print("Terjadi kesalahan")
+            opsi = input("Tekan enter untuk mengulangi atau ketik 0 untuk kembali ke menu utama: ").strip()
+            if opsi == '0':
+                return
+            continue
+
+def hapus_buku(books, genres):
+    """Fungsi untuk menghapus buku."""
+    while True:
+        header("PERPUSTAKAAN JEMBER", "MENGHAPUS BUKU")
+        print("Masukkan kata kunci buku yang ingin dihapus (judul/author)")
+        keyword = input("(kosongkan inputan jika ingin melihat semua buku):").strip()
+        search_results = cari_buku_berdasarkan_keyword(books, keyword)
+        lihat_buku(search_results, genres)
+        
+        try:
+            book_id = int(input("Masukkan ID Buku yang ingin dihapus: "))
+            if book_id not in books['book_id'].values:
+                print("Buku tidak ditemukan!")
+                opsi = input("Tekan enter untuk mencoba lagi atau ketik 0 untuk kembali ke menu utama: ").strip()
+                if opsi == '0':
+                    return
+                continue
+            
+            books = books[books['book_id'] != book_id]
+            books.to_csv("books.csv", index=False)
+            print(f"Buku dengan ID {book_id} berhasil dihapus.")
+            
+            opsi = input("Tekan enter untuk menghapus buku lain atau ketik 0 untuk kembali ke menu utama: ").strip()
+            if opsi == '0':
+                return
+            
+        except Exception:
+            print("Input tidak valid atau terjadi kesalahan.")
+            opsi = input("Tekan enter untuk mengulangi atau ketik 0 untuk kembali ke menu utama: ").strip()
+            if opsi == '0':
+                return
+
+def konfirmasi_peminjaman():
+    transaksi = pd.read_csv('transaksi_peminjaman.csv')
+    books = pd.read_csv('books.csv')
+    header("PERPUSTAKAAN JEMBER", "KONFIRMASI PEMINJAMAN")
+    
+    menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu']
+    
+    if menunggu_transaksi.empty:
+        print("Tidak ada transaksi yang menunggu konfirmasi.")
+        return
+
+    print("\nDaftar Peminjaman yang Menunggu Konfirmasi:")
+    print(tabulate(menunggu_transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
+    while True:
+        loan_id = input("Masukkan ID peminjaman yang akan dikonfirmasi: ")
+        
+        if not loan_id.isdigit() or int(loan_id) not in menunggu_transaksi['loan_id'].values:
+            print("ID peminjaman tidak valid. Silakan coba lagi.")
+            continue
+        
+        confirm = input("Konfirmasi (1. Setujui, 2. Tolak): ")
+        
+        idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
+        
+        if confirm == '1':
+            transaksi.loc[idx, 'status'] = 'aktif'
+            
+            # Kurangi stok buku
+            book_id = transaksi.loc[idx, 'book_id'].values[0]
+            book_idx = books[books['book_id'] == book_id].index
+            books.loc[book_idx, 'quantity'] -= 1
+            
+            books.to_csv('books.csv', index=False)
+            print("Peminjaman disetujui. Status berubah menjadi aktif.")
+            break  # Exit the loop after successful confirmation
+        elif confirm == '2':
+            transaksi.loc[idx, 'status'] = 'ditolak'
+            print("Peminjaman ditolak.")
+            break  # Exit the loop after processing rejection
+        else:
+            print("Pilihan tidak valid. Silakan coba lagi.")
+
+    transaksi.to_csv('transaksi_peminjaman.csv', index=False)
+    opsi = input("Tekan enter untuk mengkonfirmasi peminjaman lain atau ketik 0 untuk kembali ke menu utama: ").strip()
+    if opsi == '0':
+        return
+    else:
+        konfirmasi_peminjaman()  # Call the function again to allow further confirmations
+
