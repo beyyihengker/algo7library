@@ -1,53 +1,59 @@
 from ui import header, footer
+import pandas as pd
+from tabulate import tabulate
+from datetime import datetime, timedelta
+import fitur as ft
 
-def interface_petugas(user_id):
+def interface_petugas():
     while True:
         header("PERPUSTAKAAN JEMBER", "MENU PETUGAS")
-        menu_petugas =[
-            ["1", "Registrasi akun peminjam"],
-            ["2", "Menambahkan buku"],
-            ["3", "Melihat daftar buku"],
-            ["4", "Peminjaman"]
-            ["5", "Pengembalian"]
-            ["6", "Logout"],
-            ["7", "Keluar Aplikasi"]
-        ]
-        for menu in menu_petugas:
-            print(f"{menu[0]}. {menu[1]}")
-    
+        
+        print("1. Lihat Daftar Buku")
+        print("2. Tambah Buku")
+        print("3. Hapus Buku")
+        print("4. Konfirmasi Peminjaman")
+        print("5. Konfirmasi Pengembalian")
+        print("6. lihat Riwayat Peminjaman")
+        print("7. Logout")
+        print("8. Keluar Aplikasi")
+
         pilihan = input("Pilih menu: ").strip()
+
+        books = pd.read_csv("books.csv")
+        genres = pd.read_csv("genres.csv")
         
         if pilihan == "1":
-            pass
-
+            ft.menu_daftar_buku()
 
         elif pilihan == "2":
-            # lihat_buku()
-            interface_petugas(user_id)
+            ft.tambah_buku(books,genres)
 
         elif pilihan == "3":
-            # tambah_buku()
-            interface_petugas(user_id)
+            ft.hapus_buku(books, genres)
 
         elif pilihan == "4":
-            # lihat_peminjaman()
-            interface_petugas(user_id)
+            ft.konfirmasi_peminjaman()
         
         elif pilihan == "5":
-            # konfirmasi_pengembalian()
-            interface_petugas(user_id)
-        
+            pass
+
         elif pilihan == "6":
+            ft.lihat_riwayat_peminjaman()
+            input("Tekan enter untuk melanjutkan...")
+        
+        elif pilihan == "7":
             return
         
-        elif pilihan == "6":
+        elif pilihan == "8":
             exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
             if exit_choice == 'y':
                 footer()
                 exit()
-            interface_petugas(user_id)
+            elif exit_choice == 'n':
+                input("Tekan enter untuk kembali ke menu utama.")
+            else:
+                input("Pilihan tidak valid. Tekan enter untuk kembali ke menu utama.")
         
         else:
             print("Pilihan tidak valid.")
             input("Tekan enter untuk kembali")
-            interface_petugas(user_id)

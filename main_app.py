@@ -16,7 +16,9 @@ def main():
         if user_id is not None:
             role = users.loc[users['user_id'] == user_id, 'role'].values[0]
         if role == "petugas":
-            pt.interface_petugas(user_id)
+            pt.interface_petugas()
+            input("Tekan ENTER untuk kembali ke menu utama")
+            main()
         elif role == "peminjam":
             pj.interface_peminjam(user_id)
             input("Tekan ENTER untuk kembali ke menu utama")
@@ -34,8 +36,11 @@ def main():
         if exit_choice == 'y':
             footer()
             exit()
+        elif exit_choice == 'n':
+            input("Tekan enter untuk kembali ke menu utama.")
         else:
-            main()
+            input("Pilihan tidak valid. Tekan enter untuk kembali ke menu utama.")
+        main()
     else:
         print("Opsi tidak valid. Silakan masukkan angka 1, 2, atau 0.")
         input("Tekan ENTER untuk mengulang")
