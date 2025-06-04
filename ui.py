@@ -9,9 +9,11 @@ def header(*title):
     clear_screen()
     print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
     for i in title:
-        placeholder = " " * (len(i) + 4)
-        fill = "═" * (15 - (len(i)//2))
-        print(f"{fill} {i.center(len(placeholder))} {fill}")
+        placeholder = " " * (len(i))
+        if len(i) %2 == 0:
+            placeholder += " "
+        fill = "═" * (16 - len(placeholder)//2)
+        print(f"{fill}  {i.center(len(placeholder))}  {fill}")
     print("============˖ ᡣ𐭩 ⊹ ࣪  ౨ৎ˚₊============")
 
 def footer():
