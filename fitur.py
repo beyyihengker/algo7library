@@ -250,7 +250,21 @@ def lihat_riwayat_peminjaman(user_id=None):
     print("\nRiwayat Peminjaman:")
     print(tabulate(transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
 
-lihat_riwayat_peminjaman(5)
+def refresh_transkasi_peminjaman():
+    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    
+    transaksi_aktif = transaksi[transaksi['status'] == 'aktif']
+
+    if not transaksi_aktif.empty:
+        for index, row in transaksi_aktif.iterrows():
+            due_date = row['due_date']
+            today = datetime.now().strftime('%Y-%m-%d')
+            if  today > due_date:
+                transaksi.loc[index, 'status'] = 'terlambat'
+    
+    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+
+refresh_transkasi_peminjaman()
 
 # FITUR PEMINJAM
 def pinjam_buku(user_id):

@@ -3,10 +3,12 @@ from ui import header, footer
 from login import login, registrasi
 import peminjam as pj
 import petugas as pt
+import fitur as ft
 
 def main():
     '''Main Menu'''
     users = pd.read_csv("akun_pengguna.csv")
+    ft.refresh_transkasi_peminjaman()
     header("SELAMAT DATANG DI", "PERPUSTAKAAN JEMBER")
     print("Pilih opsi:")
     print("1. Login\n2. Registrasi\n0. Keluar")
