@@ -1,5 +1,5 @@
 import pandas as pd
-from ui import header
+from ui.ui import header
 from tabulate import tabulate
 from datetime import datetime, timedelta
 
@@ -173,8 +173,8 @@ def menu_daftar_buku(user_id=None):
         
         choice = input("Pilih menu (1-5): ")
 
-        books = pd.read_csv("books.csv")
-        genres = pd.read_csv("genres.csv")
+        books = pd.read_csv("data/books.csv")
+        genres = pd.read_csv("data/genres.csv")
         
         if choice == '1':
             lihat_buku(books, genres)
@@ -228,9 +228,9 @@ def menu_daftar_buku(user_id=None):
             input("Tekan enter untuk melanjutkan...")
 
 def lihat_riwayat_peminjaman(user_id=None):
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    transaksi = pd.read_csv("data/transaksi_peminjaman.csv")
     if user_id:
-        books = pd.read_csv("books.csv")
+        books = pd.read_csv("data/books.csv")
         transaksi_buku = transaksi.merge(books, on='book_id', how='left')
         riwayat = transaksi_buku[transaksi_buku['user_id'] == user_id]
         riwayat = riwayat[['title', 'loan_date', 'due_date', 'return_date', 'status']]
@@ -251,7 +251,7 @@ def lihat_riwayat_peminjaman(user_id=None):
     print(tabulate(transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
 
 def refresh_transkasi_peminjaman():
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
+    transaksi = pd.read_csv("data/transaksi_peminjaman.csv")
     
     transaksi_aktif = transaksi[transaksi['status'] == 'aktif']
 
@@ -262,13 +262,13 @@ def refresh_transkasi_peminjaman():
             if  today > due_date:
                 transaksi.loc[index, 'status'] = 'terlambat'
     
-    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+    transaksi.to_csv("data/transaksi_peminjaman.csv", index=False)
 
 refresh_transkasi_peminjaman()
 
 # FITUR PEMINJAM
 def pinjam_buku(user_id):
-    books = pd.read_csv("books.csv")
+    books = pd.read_csv("data/books.csv")
     while True:
         try:
             book_id = int(input("Masukkan ID buku yang ingin dipinjam: "))
@@ -290,7 +290,7 @@ def pinjam_buku(user_id):
             return
 
         # Buat transaksi peminjaman
-        transaksi = pd.read_csv("transaksi_peminjaman.csv")
+        transaksi = pd.read_csv("data/transaksi_peminjaman.csv")
         loan_id = transaksi['loan_id'].max() + 1 if not transaksi.empty else 1
 
         new_transaksi = pd.DataFrame([{
@@ -304,14 +304,14 @@ def pinjam_buku(user_id):
         }])
 
         transaksi = pd.concat([transaksi, new_transaksi], ignore_index=True)
-        transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+        transaksi.to_csv("data/transaksi_peminjaman.csv", index=False)
 
         print(f"Peminjaman buku {book['title']} berhasil diajukan. Menunggu konfirmasi petugas.")
         break
 
 def kembalikan_buku(user_id):
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
-    books = pd.read_csv("books.csv")
+    transaksi = pd.read_csv("data/transaksi_peminjaman.csv")
+    books = pd.read_csv("data/books.csv")
     transaksi_aktif = transaksi[(transaksi['user_id'] == user_id) & (transaksi['status'] == 'aktif')]
     
     if transaksi_aktif.empty:
@@ -343,7 +343,7 @@ def kembalikan_buku(user_id):
     idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
     transaksi.loc[idx, 'status'] = 'menunggu_pengecekan'
     
-    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
+    transaksi.to_csv("data/transaksi_peminjaman.csv", index=False)
     print("Buku berhasil diajukan untuk dikembalikan. Menunggu konfirmasi petugas.")
 
 # FITUR PETUGAS
@@ -376,7 +376,7 @@ def tambah_buku(books, genres):
                     break
 
             books = pd.concat([books, pd.DataFrame([new_book])], ignore_index=True)
-            books.to_csv("books.csv", index=False)
+            books.to_csv("data/books.csv", index=False)
             print(f"Buku '{new_book['title']}' berhasil ditambahkan.")
             opsi = input("Tekan enter untuk menambahkan buku lain atau ketik 0 untuk kembali ke menu utama: ").strip()
             if opsi == '0':
@@ -408,7 +408,7 @@ def hapus_buku(books, genres):
                 continue
             
             books = books[books['book_id'] != book_id]
-            books.to_csv("books.csv", index=False)
+            books.to_csv("data/books.csv", index=False)
             print(f"Buku dengan ID {book_id} berhasil dihapus.")
             
             opsi = input("Tekan enter untuk menghapus buku lain atau ketik 0 untuk kembali ke menu utama: ").strip()

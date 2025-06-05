@@ -1,13 +1,13 @@
 import pandas as pd
-from ui import header, footer
-from login import login, registrasi
-import peminjam as pj
-import petugas as pt
-import fitur as ft
+from ui.ui import header, footer
+from modules.login import login, registrasi
+import modules.peminjam as pj
+import modules.petugas as pt
+import modules.fitur as ft
 
 def main():
     '''Main Menu'''
-    users = pd.read_csv("akun_pengguna.csv")
+    users = pd.read_csv("data/akun_pengguna.csv")
     ft.refresh_transkasi_peminjaman()
     header("SELAMAT DATANG DI", "PERPUSTAKAAN JEMBER")
     print("Pilih opsi:")

@@ -1,6 +1,6 @@
 import pandas as pd
-import fitur as ft
-from ui import header, footer
+import modules.fitur as ft
+from ui.ui import header, footer
 
 def interface_peminjam(user_id):
     """Antarmuka peminjam untuk melihat daftar buku dan meminjam buku."""

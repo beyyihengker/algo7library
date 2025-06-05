@@ -1,8 +1,8 @@
-from ui import header, footer
+from ui.ui import header, footer
 import pandas as pd
 from tabulate import tabulate
 from datetime import datetime, timedelta
-import fitur as ft
+import modules.fitur as ft
 
 def interface_petugas():
     while True:
@@ -19,8 +19,8 @@ def interface_petugas():
 
         pilihan = input("Pilih menu: ").strip()
 
-        books = pd.read_csv("books.csv")
-        genres = pd.read_csv("genres.csv")
+        books = pd.read_csv("data/books.csv")
+        genres = pd.read_csv("data/genres.csv")
         
         if pilihan == "1":
             ft.menu_daftar_buku()

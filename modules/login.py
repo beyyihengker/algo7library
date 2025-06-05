@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from ui import header
+from ui.ui import header
 
 def login():
     header("PERPUSTAKAAN JEMBER", "LOGIN AKUN PENGGUNA")
@@ -8,7 +8,7 @@ def login():
     username = input("Username: ").strip()
     password = input("Password: ").strip()
 
-    df = pd.read_csv("akun_pengguna.csv")
+    df = pd.read_csv("data/akun_pengguna.csv")
 
     ambil_role = df[(df["username"] == username) & (df["password"] == password)]
 
