@@ -1,9 +1,14 @@
+"""Aplikasi Utama Pengelolaan Perpustakaan"""
+
+# Third-Party Library
 import pandas as pd
-from ui.ui import header, footer
-from modules.login import login, registrasi
+
+# Local imports
+import modules.fitur as ft
 import modules.peminjam as pj
 import modules.petugas as pt
-import modules.fitur as ft
+from modules.login import login, registrasi
+from ui.ui import header, footer
 
 def main():
     '''Main Menu'''
@@ -32,7 +37,7 @@ def main():
         print("Akun berhasil dibuat. Silahkan login ulang!")
         input("Tekan ENTER untuk melanjutkan")
         main()
-        
+
     elif opsi == "0":
         exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
         if exit_choice == 'y':

@@ -1,3 +1,6 @@
+"""Modul UI
+Berisi fungsi untuk tampilan di terminal"""
+
 import os
 
 def clear_screen():
