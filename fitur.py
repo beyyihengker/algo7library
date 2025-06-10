@@ -62,7 +62,6 @@ def merge(left, right, key, ascending):
 
 
 def insertion_sort(df, key, ascending):
-    df = df.copy()
     for i in range(1, len(df)):
         j = i
         while j > 0:
@@ -72,7 +71,6 @@ def insertion_sort(df, key, ascending):
                 condition = df.iloc[j - 1][key] < df.iloc[j][key]
                 
             if condition:
-                # Swap rows
                 df.iloc[j - 1], df.iloc[j] = df.iloc[j], df.iloc[j - 1]
                 j -= 1
             else:
@@ -80,7 +78,7 @@ def insertion_sort(df, key, ascending):
     return df
 
 def find_books_by_genre(books, genre_id):
-    # Sort the books by 'genre_id' in ascending order
+    '''implementasi binary search dengan range finding'''
     books_sorted = optimized_merge_sort(books, key='genre_id', ascending=True)
     low = 0
     high = len(books_sorted) - 1
@@ -91,16 +89,13 @@ def find_books_by_genre(books, genre_id):
         current_genre = books_sorted.iloc[mid]['genre_id']
 
         if current_genre == genre_id:
-            # Expand to the left to find all matching genres
             left = mid - 1
             while left >= 0 and books_sorted.iloc[left]['genre_id'] == genre_id:
                 result_indices.append(left)
                 left -= 1
 
-            # Include the mid index
             result_indices.append(mid)
 
-            # Expand to the right to find all matching genres
             right = mid + 1
             while right < len(books_sorted) and books_sorted.iloc[right]['genre_id'] == genre_id:
                 result_indices.append(right)
@@ -112,7 +107,6 @@ def find_books_by_genre(books, genre_id):
         else:
             high = mid - 1
 
-    # Return the found books or an empty DataFrame if none found
     if result_indices:
         return books_sorted.iloc[result_indices].copy()
     else:
