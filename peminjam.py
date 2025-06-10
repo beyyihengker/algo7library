@@ -1,4 +1,3 @@
-import pandas as pd
 import fitur as ft
 from ui import header, footer
 
@@ -25,14 +24,10 @@ def interface_peminjam(user_id):
             input("Tekan enter untuk melanjutkan...")
 
         elif pilihan == "3":
-            header("PERPUSTAKAAN JEMBER", "KEMBALIKAN BUKU")
-            ft.kembalikan_buku(user_id)
-            input("Tekan enter untuk melanjutkan...")
+            pass
         
         elif pilihan == "4":
-            header("PERPUSTAKAAN JEMBER", "RIWAYAT PEMINJAMAN")
-            ft.lihat_riwayat_peminjaman(user_id)
-            input("Tekan enter untuk melanjutkan...")
+            pass
     
         elif pilihan == "5":
                 return

@@ -1,7 +1,5 @@
 from ui import header, footer
 import pandas as pd
-from tabulate import tabulate
-from datetime import datetime, timedelta
 import fitur as ft
 
 def interface_petugas():
@@ -35,11 +33,10 @@ def interface_petugas():
             ft.konfirmasi_peminjaman()
         
         elif pilihan == "5":
-            ft.konfirmasi_pengembalian()
+            pass
 
         elif pilihan == "6":
-            ft.lihat_riwayat_peminjaman()
-            input("Tekan enter untuk melanjutkan...")
+            pass
         
         elif pilihan == "7":
             return

@@ -62,6 +62,7 @@ def merge(left, right, key, ascending):
 
 
 def insertion_sort(df, key, ascending):
+    df = df.copy()
     for i in range(1, len(df)):
         j = i
         while j > 0:
@@ -221,45 +222,6 @@ def menu_daftar_buku(user_id=None):
         else:
             input("Tekan enter untuk melanjutkan...")
 
-def lihat_riwayat_peminjaman(user_id=None):
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
-    if user_id:
-        books = pd.read_csv("books.csv")
-        transaksi_buku = transaksi.merge(books, on='book_id', how='left')
-        riwayat = transaksi_buku[transaksi_buku['user_id'] == user_id]
-        riwayat = riwayat[['title', 'loan_date', 'due_date', 'return_date', 'status']]
-        riwayat = riwayat.rename(columns={
-            'title': 'Judul Buku',
-            'loan_date': 'Tanggal Pinjam',
-            'due_date': 'Tanggal Batas Pengembalian',
-            'return_date': 'Tanggal Pengembalian',
-            'status': 'Status'
-        })
-        transaksi = riwayat
-
-    if transaksi.empty:
-        print("Tidak ada riwayat peminjaman.")
-        return
-    
-    print("\nRiwayat Peminjaman:")
-    print(tabulate(transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
-
-def refresh_transkasi_peminjaman():
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
-    
-    transaksi_aktif = transaksi[transaksi['status'] == 'aktif']
-
-    if not transaksi_aktif.empty:
-        for index, row in transaksi_aktif.iterrows():
-            due_date = row['due_date']
-            today = datetime.now().strftime('%Y-%m-%d')
-            if  today > due_date:
-                transaksi.loc[index, 'status'] = 'terlambat'
-    
-    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
-
-refresh_transkasi_peminjaman()
-
 # FITUR PEMINJAM
 def pinjam_buku(user_id):
     books = pd.read_csv("books.csv")
@@ -302,43 +264,6 @@ def pinjam_buku(user_id):
 
         print(f"Peminjaman buku {book['title']} berhasil diajukan. Menunggu konfirmasi petugas.")
         break
-
-def kembalikan_buku(user_id):
-    transaksi = pd.read_csv("transaksi_peminjaman.csv")
-    books = pd.read_csv("books.csv")
-    transaksi_aktif = transaksi[(transaksi['user_id'] == user_id) & (transaksi['status'] == 'aktif')]
-    
-    if transaksi_aktif.empty:
-        print("Tidak ada buku yang sedang dipinjam.")
-        return
-    
-    print("\nDaftar Buku yang Dipinjam:")
-    daftar_buku = transaksi_aktif.merge(books, on='book_id', how='left')
-    daftar_buku = daftar_buku[['loan_id', 'title', 'loan_date', 'due_date']]
-    daftar_buku = daftar_buku.rename(columns={
-        'loan_id': 'ID Peminjaman',
-        'title': 'Judul Buku',
-        'loan_date': 'Tanggal Pinjam',
-        'due_date': 'Tanggal Batas Pengembalian'
-    })
-    print(tabulate(daftar_buku, headers='keys', tablefmt='fancy_grid', showindex=False))
-    
-    while True:
-        try:
-            loan_id = int(input("Masukkan ID peminjaman yang akan dikembalikan: "))
-            if loan_id not in transaksi_aktif['loan_id'].values:
-                print("ID peminjaman tidak valid. Silakan coba lagi.")
-                continue
-            break
-        except ValueError:
-            print("ID peminjaman harus berupa angka. Silakan coba lagi.")
-            continue
-    
-    idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
-    transaksi.loc[idx, 'status'] = 'menunggu_pengecekan'
-    
-    transaksi.to_csv("transaksi_peminjaman.csv", index=False)
-    print("Buku berhasil diajukan untuk dikembalikan. Menunggu konfirmasi petugas.")
 
 # FITUR PETUGAS
 def tambah_buku(books, genres):
@@ -448,19 +373,18 @@ def konfirmasi_peminjaman():
             transaksi.loc[idx, 'loan_date'] = today
             transaksi.loc[idx, 'due_date'] = due_date
             transaksi.loc[idx, 'status'] = 'aktif'
-            
-            # Kurangi stok buku
+           
             book_id = transaksi.loc[idx, 'book_id'].values[0]
             book_idx = books[books['book_id'] == book_id].index
             books.loc[book_idx, 'quantity'] -= 1
             
             books.to_csv('books.csv', index=False)
             print("Peminjaman disetujui. Status berubah menjadi aktif.")
-            break  # Exit the loop after successful confirmation
+            break
         elif confirm == '2':
             transaksi.loc[idx, 'status'] = 'ditolak'
             print("Peminjaman ditolak.")
-            break  # Exit the loop after processing rejection
+            break
         else:
             input("Pilihan tidak valid. Silakan coba lagi.")
 
@@ -469,46 +393,4 @@ def konfirmasi_peminjaman():
     if opsi == '0':
         return
     else:
-        konfirmasi_peminjaman()  # Call the function again to allow further confirmations
-
-def konfirmasi_pengembalian():
-    transaksi = pd.read_csv('transaksi_peminjaman.csv')
-    books = pd.read_csv('books.csv')
-
-    menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu_pengecekan']
-    
-    while True:
-        header("PERPUSTAKAAN JEMBER", "KONFIRMASI PENGEMBALIAN")
-        if menunggu_transaksi.empty:
-            print("Tidak ada pengembalian yang menunggu konfirmasi.")
-            input("Tekan enter untuk kembali ke menu utama.")
-            return
-
-        print("\nDaftar Pengembalian Menunggu Konfirmasi:")
-        print(tabulate(menunggu_transaksi, headers='keys', tablefmt='fancy_grid', showindex=False))
-    
-        loan_id = input("Masukkan ID peminjaman yang akan dikonfirmasi: ")
-
-        if not loan_id.isdigit() or int(loan_id) not in menunggu_transaksi['loan_id'].values:
-            input("ID peminjaman tidak valid. Silakan coba lagi.")
-            continue
-
-        idx = transaksi[transaksi['loan_id'] == int(loan_id)].index
-        transaksi.loc[idx, 'status'] = 'dikembalikan'
-        transaksi.loc[idx, 'return_date'] = datetime.now().strftime('%Y-%m-%d')
-
-        # Tambah stok buku
-        book_id = transaksi.loc[idx, 'book_id'].values[0]
-        book_idx = books[books['book_id'] == book_id].index
-        books.loc[book_idx, 'quantity'] += 1
-
-        books.to_csv('books.csv', index=False)
-        transaksi.to_csv('transaksi_peminjaman.csv', index=False)
-        print("Pengembalian berhasil dikonfirmasi. Status berubah menjadi dikembalikan.")
-        break
-    
-    opsi = input("Tekan enter untuk mengkonfirmasi pengembalian lain atau ketik 0 untuk kembali ke menu utama: ").strip()
-    if opsi == '0':
-        return
-    else:
-        konfirmasi_pengembalian()
+        konfirmasi_peminjaman()
