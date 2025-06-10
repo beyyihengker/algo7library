@@ -30,7 +30,7 @@ def interface_peminjam(user_id):
             pass
     
         elif pilihan == "5":
-                return
+            return
 
         elif pilihan == "6":
             exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
