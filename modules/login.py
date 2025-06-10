@@ -1,8 +1,10 @@
-import os
+"""Login dan Registrasi Pengguna Perpustakaan"""
+
 import pandas as pd
 from ui.ui import header
 
 def login():
+    """Fungsi login pengguna perpustakaan"""
     header("PERPUSTAKAAN JEMBER", "LOGIN AKUN PENGGUNA")
 
     username = input("Username: ").strip()
@@ -28,16 +30,16 @@ def login():
     return user_id
 
 def registrasi():
-    '''registrasi'''
+    """Fungsi registrasi sebagai peminjam perpustakaan"""
 
-    df = pd.read_csv('akun_pengguna.csv')
-    
+    df = pd.read_csv('data/akun_pengguna.csv')
+
     while True:
         header("PERPUSTAKAAN JEMBER", "REGISTRASI AKUN PENGGUNA")
         username = input("username: ").strip()
         password = input("password: ").strip()
         role = "peminjam"
-        user_id = pd.read_csv('akun_pengguna.csv')['user_id'].max() + 1 if os.path.exists('akun_pengguna.csv') else 1
+        user_id = df['user_id'].max() + 1 if not df.empty else 1
 
         if not username:
             print("Username tidak boleh kosong")
@@ -76,7 +78,8 @@ def registrasi():
 
             break
 
-    user_baru = pd.DataFrame([[user_id, username, password, role]], columns=["user_id", "username", "password", "role"])
+    user_baru = pd.DataFrame([[user_id, username, password, role]],
+                             columns=["user_id", "username", "password", "role"])
 
     df = pd.concat([df, user_baru], ignore_index=True)
     df.to_csv('akun_pengguna.csv', index=False)
