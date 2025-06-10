@@ -38,7 +38,7 @@ def lihat_buku(books, genres):
         print("File buku.csv tidak ditemukan. Pastikan file tersebut ada di direktori yang benar.")
 
 def optimized_merge_sort(df, key, ascending=True):
-    """Fungsi sorting menggunakan Merge Sort yang dioptimalkan untuk dataset kecil"""
+    """Implementasi Merge Sort yang dioptimalkan menggunakan Insertion Sort untuk dataset kecil"""
     if len(df) <= 15:  # Gunakan Insertion Sort untuk dataset kecil
         return insertion_sort(df, key, ascending)
 
@@ -49,6 +49,7 @@ def optimized_merge_sort(df, key, ascending=True):
     return merge(left, right, key, ascending)
 
 def merge(left, right, key, ascending):
+    """Menggabungkan data yang sudah diurutkan"""
     result = pd.DataFrame(columns=left.columns)
     i = j = 0
 
@@ -81,7 +82,6 @@ def insertion_sort(df, key, ascending):
                 condition = df.iloc[j - 1][key] < df.iloc[j][key]
 
             if condition:
-                # Swap rows
                 df.iloc[j - 1], df.iloc[j] = df.iloc[j], df.iloc[j - 1]
                 j -= 1
             else:
@@ -101,16 +101,13 @@ def find_books_by_genre(books, genre_id):
         current_genre = books_sorted.iloc[mid]['genre_id']
 
         if current_genre == genre_id:
-            # Expand to the left to find all matching genres
             left = mid - 1
             while left >= 0 and books_sorted.iloc[left]['genre_id'] == genre_id:
                 result_indices.append(left)
                 left -= 1
 
-            # Include the mid index
             result_indices.append(mid)
 
-            # Expand to the right to find all matching genres
             right = mid + 1
             while right < len(books_sorted) and books_sorted.iloc[right]['genre_id'] == genre_id:
                 result_indices.append(right)
@@ -122,7 +119,6 @@ def find_books_by_genre(books, genre_id):
         else:
             high = mid - 1
 
-    # Return the found books or an empty DataFrame if none found
     if result_indices:
         return books_sorted.iloc[result_indices].copy()
     else:
@@ -303,7 +299,6 @@ def pinjam_buku(user_id):
             print("Buku tidak tersedia!")
             return
 
-        # Buat transaksi peminjaman
         transaksi = pd.read_csv("data/transaksi_peminjaman.csv")
         loan_id = transaksi['loan_id'].max() + 1 if not transaksi.empty else 1
 
@@ -372,19 +367,18 @@ def tambah_buku(books, genres):
                 'book_id': books['book_id'].max() + 1 if not books.empty else 1,
                 'title': input("Masukkan Judul Buku: ").strip(),
                 'author': input("Masukkan Pengarang Buku: ").strip(),
-                # 'genre_id': input("Masukkan ID Genre: ").strip(),
                 'quantity': int(input("Masukkan Jumlah Buku: ").strip()),
                 'publication_year': int(input("Masukkan Tahun Terbit: ").strip()),
                 'isbn': input("Masukkan ISBN Buku: ").strip()
             }
 
-            genres = genres.rename(columns={'genre_id': 'id genre', 'genre_name': 'genre'})
+            genres = genres.rename(columns={'genre_id': 'ID genre', 'genre_name': 'genre'})
             print("Daftar Genre:")
             print(tabulate(genres, headers='keys', tablefmt='fancy_grid', showindex=False))
 
             while True:
                 new_book['genre_id'] = input("Masukkan ID Genre: ").strip()
-                # Validasi genre_id
+
                 if new_book['genre_id'] not in genres['id genre'].astype(str).values:
                     print("ID Genre tidak valid. Silakan coba lagi.")
                 else:
@@ -471,18 +465,17 @@ def konfirmasi_peminjaman():
             transaksi.loc[idx, 'due_date'] = due_date
             transaksi.loc[idx, 'status'] = 'aktif'
 
-            # Kurangi stok buku
             book_id = transaksi.loc[idx, 'book_id'].values[0]
             book_idx = books[books['book_id'] == book_id].index
             books.loc[book_idx, 'quantity'] -= 1
 
             books.to_csv('books.csv', index=False)
             print("Peminjaman disetujui. Status berubah menjadi aktif.")
-            break  # Exit the loop after successful confirmation
+            break
         elif confirm == '2':
             transaksi.loc[idx, 'status'] = 'ditolak'
             print("Peminjaman ditolak.")
-            break  # Exit the loop after processing rejection
+            break
         else:
             input("Pilihan tidak valid. Silakan coba lagi.")
 
@@ -491,7 +484,7 @@ def konfirmasi_peminjaman():
     if opsi == '0':
         return
     else:
-        konfirmasi_peminjaman()  # Call the function again to allow further confirmations
+        konfirmasi_peminjaman()
 
 def konfirmasi_pengembalian():
     """Fungsi untuk mengonfirmasi pengembalian buku oleh petugas"""
@@ -520,7 +513,6 @@ def konfirmasi_pengembalian():
         transaksi.loc[idx, 'status'] = 'dikembalikan'
         transaksi.loc[idx, 'return_date'] = datetime.now().strftime('%Y-%m-%d')
 
-        # Tambah stok buku
         book_id = transaksi.loc[idx, 'book_id'].values[0]
         book_idx = books[books['book_id'] == book_id].index
         books.loc[book_idx, 'quantity'] += 1
