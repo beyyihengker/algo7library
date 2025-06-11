@@ -432,8 +432,8 @@ def hapus_buku(books, genres):
 
 def konfirmasi_peminjaman():
     """Fungsi untuk mengkonfirmasi peminjaman buku oleh petugas"""
-    transaksi = pd.read_csv('transaksi_peminjaman.csv')
-    books = pd.read_csv('books.csv')
+    transaksi = pd.read_csv('data/transaksi_peminjaman.csv')
+    books = pd.read_csv('data/books.csv')
 
     menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu']
 
@@ -469,7 +469,7 @@ def konfirmasi_peminjaman():
             book_idx = books[books['book_id'] == book_id].index
             books.loc[book_idx, 'quantity'] -= 1
 
-            books.to_csv('books.csv', index=False)
+            books.to_csv('data/books.csv', index=False)
             print("Peminjaman disetujui. Status berubah menjadi aktif.")
             break
         elif confirm == '2':
@@ -479,7 +479,7 @@ def konfirmasi_peminjaman():
         else:
             input("Pilihan tidak valid. Silakan coba lagi.")
 
-    transaksi.to_csv('transaksi_peminjaman.csv', index=False)
+    transaksi.to_csv('data/transaksi_peminjaman.csv', index=False)
     opsi = input("Tekan enter untuk mengkonfirmasi peminjaman lain atau ketik 0 untuk kembali ke menu utama: ").strip()
     if opsi == '0':
         return
@@ -488,8 +488,8 @@ def konfirmasi_peminjaman():
 
 def konfirmasi_pengembalian():
     """Fungsi untuk mengonfirmasi pengembalian buku oleh petugas"""
-    transaksi = pd.read_csv('transaksi_peminjaman.csv')
-    books = pd.read_csv('books.csv')
+    transaksi = pd.read_csv('data/transaksi_peminjaman.csv')
+    books = pd.read_csv('data/books.csv')
 
     menunggu_transaksi = transaksi[transaksi['status'] == 'menunggu_pengecekan']
 
@@ -517,8 +517,8 @@ def konfirmasi_pengembalian():
         book_idx = books[books['book_id'] == book_id].index
         books.loc[book_idx, 'quantity'] += 1
 
-        books.to_csv('books.csv', index=False)
-        transaksi.to_csv('transaksi_peminjaman.csv', index=False)
+        books.to_csv('data/books.csv', index=False)
+        transaksi.to_csv('data/transaksi_peminjaman.csv', index=False)
         print("Pengembalian berhasil dikonfirmasi. Status berubah menjadi dikembalikan.")
         break
 

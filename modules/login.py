@@ -82,4 +82,4 @@ def registrasi():
                              columns=["user_id", "username", "password", "role"])
 
     df = pd.concat([df, user_baru], ignore_index=True)
-    df.to_csv('akun_pengguna.csv', index=False)
+    df.to_csv('data/akun_pengguna.csv', index=False)
