@@ -1,18 +1,19 @@
-import pandas as pd
-import fitur as ft
-from ui import header, footer
+"""Antarmuka peminjam untuk menu peminjam"""
+
+import modules.fitur as ft
+from ui.ui import header, footer
 
 def interface_peminjam(user_id):
-    """Antarmuka peminjam untuk melihat daftar buku dan meminjam buku."""
+    """Antarmuka peminjam"""
     while True:
         header("PERPUSTAKAAN JEMBER", "MENU PEMINJAM")
-        
+
         print("1. Lihat Daftar Buku")
         print("2. Pinjam Buku")
         print("3. Kembalikan Buku")
         print("4. Lihat Riwayat Peminjaman")
         print("5. Logout")
-        print("6. Keluar Aplikasi")       
+        print("6. Keluar Aplikasi")
 
         pilihan = input("Pilih menu: ").strip()
 
@@ -28,14 +29,14 @@ def interface_peminjam(user_id):
             header("PERPUSTAKAAN JEMBER", "KEMBALIKAN BUKU")
             ft.kembalikan_buku(user_id)
             input("Tekan enter untuk melanjutkan...")
-        
+
         elif pilihan == "4":
             header("PERPUSTAKAAN JEMBER", "RIWAYAT PEMINJAMAN")
             ft.lihat_riwayat_peminjaman(user_id)
             input("Tekan enter untuk melanjutkan...")
-    
+
         elif pilihan == "5":
-                return
+            return
 
         elif pilihan == "6":
             exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()

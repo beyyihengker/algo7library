@@ -1,13 +1,14 @@
-from ui import header, footer
+"""Antarmuka petugas perpustakaan untuk menu petugas"""
+
 import pandas as pd
-from tabulate import tabulate
-from datetime import datetime, timedelta
-import fitur as ft
+import modules.fitur as ft
+from ui.ui import header, footer
 
 def interface_petugas():
+    """Antarmuka petugas"""
     while True:
         header("PERPUSTAKAAN JEMBER", "MENU PETUGAS")
-        
+
         print("1. Lihat Daftar Buku")
         print("2. Tambah Buku")
         print("3. Hapus Buku")
@@ -19,9 +20,9 @@ def interface_petugas():
 
         pilihan = input("Pilih menu: ").strip()
 
-        books = pd.read_csv("books.csv")
-        genres = pd.read_csv("genres.csv")
-        
+        books = pd.read_csv("data/books.csv")
+        genres = pd.read_csv("data/genres.csv")
+
         if pilihan == "1":
             ft.menu_daftar_buku()
 
@@ -33,17 +34,17 @@ def interface_petugas():
 
         elif pilihan == "4":
             ft.konfirmasi_peminjaman()
-        
+
         elif pilihan == "5":
             ft.konfirmasi_pengembalian()
 
         elif pilihan == "6":
             ft.lihat_riwayat_peminjaman()
             input("Tekan enter untuk melanjutkan...")
-        
+
         elif pilihan == "7":
             return
-        
+
         elif pilihan == "8":
             exit_choice = input("Apakah Anda yakin ingin keluar? (y/n): ").strip().lower()
             if exit_choice == 'y':
@@ -53,7 +54,7 @@ def interface_petugas():
                 input("Tekan enter untuk kembali ke menu utama.")
             else:
                 input("Pilihan tidak valid. Tekan enter untuk kembali ke menu utama.")
-        
+
         else:
             print("Pilihan tidak valid.")
             input("Tekan enter untuk kembali")
